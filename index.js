@@ -5,6 +5,9 @@
  * This is the main entrypoint to your Probot app
  * @param {import('probot').Probot} app
  */
+
+ // Global Init 
+ 
  var hasInvalidTypesBool = false;
 
 module.exports = (app) => {
@@ -15,15 +18,13 @@ module.exports = (app) => {
     async (context) => {
       app.log.info(context.payload);
 
-      // Init 
-      // var hasInvalidTypesBool = false;
 
       // Get the owner, repo, and pull number from the context
       const owner = context.payload.repository.owner.login;
       const repo = context.payload.repository.name;
       const pull_number = context.payload.pull_request.number;
       
-      // Get the files modified by the pull request
+      // Get the files modified by the commits in the pull request
       const res = await context.octokit.pulls.listFiles({
         owner,
         repo,
@@ -31,6 +32,7 @@ module.exports = (app) => {
       });
 
 
+      // Loop through the files and check for invalid file types
       res.data.forEach(file => {
         console.log( `File updated or added: ${file.filename}`);
         var laststring = getLastString(file.filename, '.');
@@ -38,6 +40,7 @@ module.exports = (app) => {
         var invalidExtensionType = matchesInvalidString(laststring);
         console.log(`invalidExtensionType is: ${invalidExtensionType}`);
 
+        // Set the global bool to true if an invalid file type is found
         if (invalidExtensionType) {
           hasInvalidTypesBool = true;
           console.log(`Invalid file type: ${laststring}`);
@@ -46,12 +49,16 @@ module.exports = (app) => {
         }
       });
       
+      // Set the commit status to success or failure based on the bool
       var commitStatusState = getStatusString(hasInvalidTypesBool);
       console.log(`commitStatusState is: ${commitStatusState}`);
+
+      // Set the commit status description
       var commitStatusDescription = getStatusDescription(hasInvalidTypesBool);
       console.log(`commitStatusDescription is: ${commitStatusDescription}`);  
 
 
+      // Create the commit status
       const commitStatus = await context.octokit.repos.createCommitStatus({
         owner,
         repo,
@@ -66,20 +73,26 @@ module.exports = (app) => {
   );
 };
 
+// Helper functions
+
+// Check if the file extension matches an invalid string
 function matchesInvalidString(str) {
   const invalidStrings = ['gz', 'bin', 'exe'];
   return invalidStrings.includes(str);
 }
 
+// Get the last string in a string separated by a separator
 function getLastString(str, separator) {
   const parts = str.split(separator);
   return parts[parts.length - 1];
 }
 
+// Get the commit status string based on the bool
 function getStatusString(bool) {
   return bool ? "failure" : "success";
 }
 
+// Get the commit status description
 function getStatusDescription(bool) {
   return bool ? "Invalid file types found" : "All file types are valid";
 }
