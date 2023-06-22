@@ -8,7 +8,12 @@
 
  // Global Init 
  
- var hasInvalidTypesBool = false;
+const { Octokit } = require("@octokit/core");
+const { config, composeConfigGet } = require("@probot/octokit-plugin-config");
+const MyOctokit = Octokit.plugin(config);
+const octokit = new MyOctokit({ auth: process.env.GITHUB_TOKEN });
+
+var hasInvalidTypesBool = false;
 
 module.exports = (app) => {
   // Your code here
@@ -24,6 +29,20 @@ module.exports = (app) => {
       const repo = context.payload.repository.name;
       const pull_number = context.payload.pull_request.number;
       
+      // Load config file from github app repository
+      const { config } = await octokit.config.get({
+        owner: "kevfoste",
+        repo: "file-extension-check",
+        path: ".github/config.yml"
+      });
+
+      // Log the config file
+      config.invalidfileTypes.forEach(fileType => {
+        console.log(`My filetypes: ${fileType}`);
+      });
+
+      // loop through the file types and log them
+
       // Get the files modified by the commits in the pull request
       const res = await context.octokit.pulls.listFiles({
         owner,
@@ -37,8 +56,7 @@ module.exports = (app) => {
         console.log( `File updated or added: ${file.filename}`);
         var laststring = getLastString(file.filename, '.');
         console.log(`laststring is: ${laststring}`);
-        var invalidExtensionType = matchesInvalidString(laststring);
-        console.log(`invalidExtensionType is: ${invalidExtensionType}`);
+        var invalidExtensionType = matchesInvalidString(laststring, config.invalidfileTypes);
 
         // Set the global bool to true if an invalid file type is found
         if (invalidExtensionType) {
@@ -76,8 +94,9 @@ module.exports = (app) => {
 // Helper functions
 
 // Check if the file extension matches an invalid string
-function matchesInvalidString(str) {
-  const invalidStrings = ['gz', 'bin', 'exe'];
+function matchesInvalidString(str, invalidfileTypes) {
+  //const invalidStrings = ['gz', 'bin', 'exe'];
+  const invalidStrings = invalidfileTypes;
   return invalidStrings.includes(str);
 }
 
