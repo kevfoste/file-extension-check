@@ -1,4 +1,4 @@
-invalidfiletypes:
+invalidfileTypes:
   - gz
   - bin
   - tar
