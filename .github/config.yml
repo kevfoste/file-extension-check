@@ -1,0 +1,5 @@
+invalidfiletypes:
+  - gz
+  - bin
+  - tar
+  - exe
