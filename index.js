@@ -36,10 +36,13 @@ module.exports = (app) => {
       const pull_number = context.payload.pull_request.number;
       
       // Load config file from github app repository
+      // Could also keep file extension array 
+      // in the .env file and load from 
+      // there to prevent using a token and a separate repo
       const { config } = await octokit.config.get({
-        owner: "kevfoste",
-        repo: "file-extension-check",
-        path: ".github/config.yml"
+        owner: process.env.LOAD_CONFIG_OWNER,
+        repo: process.env.LOAD_CONFIG_REPO,
+        path: process.env.LOAD_CONFIG_PATH
       });
 
       // Get the files modified by the commits in the pull request
@@ -56,10 +59,20 @@ module.exports = (app) => {
         if (debugging) { console.log( `File updated or added: ${file.filename}`); }
 
         var laststring = getLastString(file.filename, '.');
+        var invalidfileTypes = new Array();
 
         if (debugging) { console.log(`laststring is: ${laststring}`); }
 
-        var invalidExtensionType = matchesInvalidString(laststring, config.invalidfileTypes);
+        // Load the invalidfileTypes from the .env file or the config file
+        if (process.env.invalidfileTypes) {
+            invalidfileTypes = process.env.invalidfileTypes.split(','); 
+            if (debugging) { console.log(`invalidfileTypes from .env is: ${invalidfileTypes}`); }
+        } else {
+            invalidfileTypes = config.invalidfileTypes;
+            if (debugging) { console.log(`invalidfileTypes from config is: ${invalidfileTypes}`); }
+        }
+
+        var invalidExtensionType = matchesInvalidString(laststring, invalidfileTypes);
 
         // Set the global bool to true if an invalid file type is found
         if (invalidExtensionType) {
@@ -90,7 +103,7 @@ module.exports = (app) => {
         sha: context.payload.pull_request.head.sha,
         state: commitStatusState,
         description: commitStatusDescription,
-        context: "Invalid file types"
+        context: "Trying to merge invalid file types with extension:"
       });
     }
   ); 
@@ -100,7 +113,6 @@ module.exports = (app) => {
 
 // Check if the file extension matches an invalid string
 function matchesInvalidString(str, invalidfileTypes) {
-  //const invalidStrings = ['gz', 'bin', 'exe'];
   const invalidStrings = invalidfileTypes;
   return invalidStrings.includes(str);
 }
