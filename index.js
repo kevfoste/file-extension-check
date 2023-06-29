@@ -39,18 +39,28 @@ module.exports = (app) => {
       // Could also keep file extension array 
       // in the .env file and load from 
       // there to prevent using a token and a separate repo
-      const { config } = await octokit.config.get({
-        owner: process.env.LOAD_CONFIG_OWNER,
-        repo: process.env.LOAD_CONFIG_REPO,
-        path: process.env.LOAD_CONFIG_PATH
+      let config = {};
+      try {
+        config  = await octokit.config.get({
+          owner: process.env.LOAD_CONFIG_OWNER,
+          repo: process.env.LOAD_CONFIG_REPO,
+          path: process.env.LOAD_CONFIG_PATH
       });
+      } catch (error) {
+        console.log(`Error loading config file: ${error.message}`);
+      }
 
       // Get the files modified by the commits in the pull request
-      const res = await context.octokit.pulls.listFiles({
-        owner,
-        repo,
-        pull_number
+      let res = {};
+      try {
+        res = await context.octokit.pulls.listFiles({
+          owner,
+          repo,
+          pull_number
       });
+      } catch (error) {
+        console.log(`Error listing files: ${error.message}`);
+      }
 
 
       // Loop through the files and check for invalid file types
