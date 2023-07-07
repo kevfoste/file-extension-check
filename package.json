@@ -1,11 +1,14 @@
 {
-  "name": "file-extension-check",
+  "name": "@kevfoste/file-extension-check",
   "version": "1.0.0",
   "private": true,
   "description": "Check file extensions",
   "author": "Kevin Foster",
   "license": "ISC",
   "homepage": "https://github.com//",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@kevfoste"
+  },
   "keywords": [
     "probot",
     "github",
