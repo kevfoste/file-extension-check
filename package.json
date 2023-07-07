@@ -1,7 +1,7 @@
 {
   "name": "@kevfoste/file-extension-check",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
   "description": "Check file extensions",
   "author": "Kevin Foster",
   "license": "ISC",
