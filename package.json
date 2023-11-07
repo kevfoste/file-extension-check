@@ -19,6 +19,7 @@
     "test": "echo init run"
   },
   "dependencies": {
+    "octokit-auth-probot": "^2.0.0",
     "probot": "^12.2.4"
   },
   "devDependencies": {
