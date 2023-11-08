@@ -16,9 +16,11 @@
   ],
   "scripts": {
     "start": "probot run ./index.js",
+    "dev": "nodemon --exec \"npm start\"",
     "test": "echo init run"
   },
   "dependencies": {
+    "nodemon": "^3.0.1",
     "octokit-auth-probot": "^2.0.0",
     "probot": "^12.2.4"
   },
