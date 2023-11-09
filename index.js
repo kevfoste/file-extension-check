@@ -8,7 +8,7 @@
 
  // Global Init 
 const util = require('util');
-const debugging = true;
+const debugging = false;
 const { Octokit } = require("@octokit/core");
 const { createProbotAuth, authStrategy } = require("octokit-auth-probot");
 const { config, composeConfigGet } = require("@probot/octokit-plugin-config");
@@ -116,11 +116,11 @@ module.exports = (app) => {
       
       // Set the commit status to success or failure based on the bool
       var commitStatusState = getStatusString(hasInvalidTypesBool);
-      console.log(`commitStatusState is: ${commitStatusState}`);
+      if ( debugging ) {console.log(`commitStatusState is: ${commitStatusState}`); }
 
       // Set the commit status description
       var commitStatusDescription = getStatusDescription(hasInvalidTypesBool);
-      console.log(`commitStatusDescription is: ${commitStatusDescription}`);  
+      if ( debugging ) { console.log(`commitStatusDescription is: ${commitStatusDescription}`); } 
 
 
       // Create the commit status
