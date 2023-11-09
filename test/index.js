@@ -8,6 +8,7 @@
 
  // Global Init 
 const util = require('util');
+const debugging = false;
 const { Octokit } = require("@octokit/core");
 const { createProbotAuth, authStrategy } = require("octokit-auth-probot");
 const { config, composeConfigGet } = require("@probot/octokit-plugin-config");
@@ -34,10 +35,12 @@ var hasInvalidTypesBool = false;
 var invalidfileTypesFound = [];
 
 module.exports = (app) => {
-  app.log.info("file-exension-file app was loaded!");
+  // Your code here
+  app.log.info("Yay, the app was loaded!");
   app.on(
     ["pull_request.opened", "pull_request.synchronize"],
     async (context) => {
+      //app.log.info(context);
 
       // Init global vars
       hasInvalidTypesBool = false;
@@ -62,6 +65,7 @@ module.exports = (app) => {
         console.log(`Error loading config file: ${error.message}`);
       }
       
+      if (debugging) { console.log(` ConfigResult is:` + util.inspect(configResult) ); }
       // Get the files modified by the commits in the pull request
       let res = {};
       try {
@@ -78,16 +82,21 @@ module.exports = (app) => {
       // Loop through the files and check for invalid file types
       res.data.forEach(file => {
 
+        if (debugging) { console.log( `File updated or added: ${file.filename}`); }
 
         var laststring = getLastString(file.filename, '.');
         var invalidfileTypes = new Array();
 
+        if (debugging) { console.log(`laststring is: ${laststring}`); }
+        if (debugging) { console.log(`config invalidfileTypes is: ${configResult.config.invalidfileTypes}`); }
 
         // Load the invalidfileTypes from the .env file or the config file
         if (process.env.invalidfileTypes) {
             invalidfileTypes = process.env.invalidfileTypes.split(','); 
+            if (debugging) { console.log(`invalidfileTypes from .env is: ${invalidfileTypes}`); }
         } else {
             invalidfileTypes = configResult.config.invalidfileTypes;
+            if (debugging) { console.log(`invalidfileTypes from config is: ${invalidfileTypes}`); }
         }
 
         var invalidExtensionType = matchesInvalidString(laststring, invalidfileTypes);
@@ -96,14 +105,22 @@ module.exports = (app) => {
         if (invalidExtensionType) {
           hasInvalidTypesBool = true;
           invalidfileTypesFound.push(laststring);
+
+          if ( debugging ) {
+            console.log(`Invalid file type: ${laststring}`);
+            console.log(`File name: ${file.filename}`);
+            console.log('owner: ' + owner + ' repo: ' + repo + ' pull_number: ' + pull_number);
+          }
         }
       });
       
       // Set the commit status to success or failure based on the bool
       var commitStatusState = getStatusString(hasInvalidTypesBool);
+      if ( debugging ) {console.log(`commitStatusState is: ${commitStatusState}`); }
 
       // Set the commit status description
       var commitStatusDescription = getStatusDescription(hasInvalidTypesBool);
+      if ( debugging ) { console.log(`commitStatusDescription is: ${commitStatusDescription}`); } 
 
 
       // Create the commit status
