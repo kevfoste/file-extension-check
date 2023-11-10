@@ -12,24 +12,6 @@ const { Octokit } = require("@octokit/core");
 const { createProbotAuth, authStrategy } = require("octokit-auth-probot");
 const { config, composeConfigGet } = require("@probot/octokit-plugin-config");
 
-// // Load the .env file vars
-// const APP_ID = process.env.APP_ID;
-// const PRIVATE_KEY = process.env.PRIVATE_KEY;
-
-// // Authenticate with the app ID and private key
-// const ProbotOctokit = Octokit.defaults({
-//     authStrategy: createProbotAuth,
-// });
-
-// const octokit = new ProbotOctokit({
-//     auth: {
-//       appId: APP_ID,
-//       privateKey: PRIVATE_KEY,
-      
-//     },
-//   });
-
-
 var hasInvalidTypesBool = false;
 var invalidfileTypesFound = [];
 
